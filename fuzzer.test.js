@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const distDir = path.join(__dirname, "dist");
 
-describe("Noir Test Runner", () => {
+describe("Noir Fuzzy Test Runner", () => {
   beforeAll(() => {
     generateNr(2, 2, 4);
   });
