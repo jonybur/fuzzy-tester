@@ -5,13 +5,22 @@ const fs = require("fs");
 const distDir = path.join(__dirname, "dist");
 
 describe("Noir Fuzzy Test Runner", () => {
+  let valuesToTest = [];
+
   beforeAll(() => {
-    generateNr(2, 2, 4);
+    ensureDirectoryStructure();
+    for (let i = 0; i < 10; i++) {
+      const valueA = getRandomInt(1, 100000);
+      const valueB = getRandomInt(1, 100000);
+      const result = valueA + valueB;
+      valuesToTest.push({ valueA, valueB, result });
+    }
   });
 
-  it("should test noir file", async () => {
+  it(`should test noir`, async () => {
+    generateNr(valuesToTest);
     await execTest();
-  });
+  }, 30000);
 });
 
 async function execTest() {
@@ -32,11 +41,21 @@ async function execTest() {
   });
 }
 
-function generateNr(valueA, valueB, result) {
+function generateNr(valuesToTest) {
+  const tests = valuesToTest.reduce((acc, item, index) => {
+    const { valueA, valueB, result } = item;
+    return (
+      acc +
+      `
+      #[test]
+      fn test${index}() { assert(add(${valueA},${valueB}) == ${result}); }
+    `
+    );
+  }, "");
+
   const scriptContent = `
   fn add(x: u64, y: u64) -> u64 { x + y }
-  #[test]
-  fn test_add() { assert(add(${valueA},${valueB}) == ${result}); }
+  ${tests}
   `;
 
   const nargoToml = `[package]
@@ -45,8 +64,17 @@ function generateNr(valueA, valueB, result) {
   compiler_version = "0.10.5"
   [dependencies]`;
 
-  fs.mkdirSync(`${distDir}`);
-  fs.mkdirSync(`${distDir}/src`);
   fs.writeFileSync(`${distDir}/Nargo.toml`, nargoToml);
   fs.writeFileSync(`${distDir}/src/main.nr`, scriptContent);
+}
+
+function ensureDirectoryStructure() {
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir);
+    fs.mkdirSync(`${distDir}/src`);
+  }
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
