@@ -1,2 +1,4 @@
 /node_modules
-/dist
+/scripts/target/*
+.DS_Store
+Prover.toml
