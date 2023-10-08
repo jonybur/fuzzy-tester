@@ -1,3 +1,3 @@
-fn main(x: bool, result: bool) {
-    assert(!x == result);
+fn main(x: bool) -> pub bool {
+    !x
 }

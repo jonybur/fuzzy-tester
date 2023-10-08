@@ -1,4 +1,7 @@
 /node_modules
+
 /scripts/target/*
+/scripts/results.json
+
 .DS_Store
 Prover.toml
