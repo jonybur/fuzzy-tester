@@ -1,3 +1,3 @@
-fn main(x: Field, result: Field) {
+fn main(x: bool, result: bool) {
     assert(!x == result);
 }

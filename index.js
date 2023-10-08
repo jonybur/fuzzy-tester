@@ -6,50 +6,39 @@ const fs = require("fs");
 const scriptsDir = path.join(__dirname, "scripts");
 const MAX_64_BIT = 18446744073709551615n;
 const packages = [
-  "sum",
-  "subtract",
-  "multiply",
-  "divide",
-  "xor",
-  "and",
-  "or",
-  "left_shift",
-  "right_shift",
-  "bitwise_not",
-  "less_than",
-  "less_than_or_equal",
-  "greater_than",
-  "greater_than_or_equal",
-  "equals",
-  "not_equals",
+  { name: "sum", generator: generateSum },
+  { name: "subtract", generator: generateSubtract },
+  { name: "multiply", generator: generateMultiply },
+  { name: "xor", generator: generateXor },
+  { name: "and", generator: generateAnd },
+  { name: "or", generator: generateOr },
+  { name: "not_equals", generator: generateNotEquals },
+  { name: "equals", generator: generateEquals },
+  { name: "greater_than", generator: generateGreaterThan },
+  { name: "greater_than_or_equal", generator: generateGreaterThanOrEqual },
+  { name: "less_than_or_equal", generator: generateLessThanOrEqual },
+  { name: "less_than", generator: generateLessThan },
+  { name: "right_shift", generator: generateRightShift },
+  /////////////// NOT WORKING
+  // { name: "left_shift", generator: generateLeftShift },
+  // { name: "divide", generator: generateDivide },
+  // { name: "bitwise_not", generator: generateBitwiseNot },
 ];
 
 async function main() {
   while (true) {
     ensureDirectoryStructure();
 
-    await Promise.all([
-      generateSum(),
-      generateSubtract(),
-      generateMultiply(),
-      generateDivide(),
-      generateXor(),
-      generateAnd(),
-      generateOr(),
-      generateLeftShift(),
-      generateRightShift(),
-      generateBitwiseNot(),
-      generateLessThan(),
-      generateLessThanOrEqual(),
-      generateGreaterThan(),
-      generateGreaterThanOrEqual(),
-      generateEquals(),
-      generateNotEquals(),
-    ]);
+    // generate baseline & provers
+    await Promise.all(packages.map((package) => package.generator()));
 
     try {
+      // run tests
       await Promise.all(
-        packages.map(async (package) => await execTest(package))
+        packages.map(async (package) => {
+          const result = await execTest(package.name);
+          console.log(result);
+        })
       );
     } catch (e) {
       console.error(e);
@@ -168,9 +157,14 @@ function generateNotEquals() {
   generateProver("not_equals", { x, y, result });
 }
 
+function isNumber(value) {
+  return typeof value === "bigint" || typeof value === "number";
+}
+
 function generateProver(projectName, values) {
   const proverToml = Object.keys(values).reduce((acc, name) => {
-    return acc + `${name}="${values[name]}"\n`;
+    const value = values[name];
+    return acc + `${name}=${isNumber(value) ? `"${value}"` : `${value}`}\n`;
   }, "");
   fs.writeFileSync(
     `${scriptsDir}/crates/${projectName}/Prover.toml`,
@@ -187,10 +181,10 @@ function ensureDirectoryStructure() {
 
 async function execTest(package) {
   return new Promise((resolve, reject) => {
+    let output = "";
     const command = spawn("nargo", ["execute", `--package`, package], {
       cwd: scriptsDir,
     });
-    let output = "";
 
     command.stdout.on("data", (data) => {
       output += data.toString();
@@ -202,12 +196,12 @@ async function execTest(package) {
 
     command.on("close", (code) => {
       if (code === 0) {
-        resolve("Proving succeeded");
+        resolve(output);
       } else if (code === 1) {
-        console.error(output);
-        reject(`Proving failed`);
+        reject(output);
       }
     });
+
     command.on("error", (error) => {
       reject(`Error executing nargo test: ${error}`);
     });

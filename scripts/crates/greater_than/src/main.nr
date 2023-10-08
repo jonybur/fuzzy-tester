@@ -1,3 +1,3 @@
-fn main(x: Field, y: Field, result: Field) {
+fn main(x: u64, y: u64, result: bool) {
     assert(x > y == result);
 }
