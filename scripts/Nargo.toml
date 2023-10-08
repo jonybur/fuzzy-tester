@@ -1,6 +1,19 @@
-[package]
-name = "fuzzer"
-type = "bin"
-compiler_version = "0.10.5"
-
-[dependencies]
+[workspace]
+members = [
+    "crates/sum",
+    "crates/subtract",
+    "crates/multiply",
+    "crates/divide",
+    "crates/xor",
+    "crates/and",
+    "crates/or",
+    "crates/left_shift",
+    "crates/right_shift",
+    "crates/bitwise_not",
+    "crates/less_than",
+    "crates/less_than_or_equal",
+    "crates/greater_than",
+    "crates/greater_than_or_equal",
+    "crates/equals",
+    "crates/not_equals"
+]

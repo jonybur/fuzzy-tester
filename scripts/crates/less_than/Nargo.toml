@@ -1,0 +1,4 @@
+[package]
+name="less_than"
+type="bin"
+compiler_version="0.10.5"

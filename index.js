@@ -4,64 +4,192 @@ const path = require("path");
 const fs = require("fs");
 
 const scriptsDir = path.join(__dirname, "scripts");
+const MAX_64_BIT = 18446744073709551615n;
+const packages = [
+  "sum",
+  "subtract",
+  "multiply",
+  "divide",
+  "xor",
+  "and",
+  "or",
+  "left_shift",
+  "right_shift",
+  "bitwise_not",
+  "less_than",
+  "less_than_or_equal",
+  "greater_than",
+  "greater_than_or_equal",
+  "equals",
+  "not_equals",
+];
 
 async function main() {
   while (true) {
     ensureDirectoryStructure();
 
-    const max64bit = 18446744073709551615n;
-    const valueA = getRandomBigInt(max64bit / 3n, max64bit / 2n);
-    const valueB = getRandomBigInt(max64bit / 3n, max64bit / 2n);
-    const sumResult = valueA + valueB;
-    const subtractResult = valueA - valueB;
-    const multiplyResult = valueA * valueB;
-    const divideResult = valueA / valueB;
-    const xorResult = valueA ^ valueB;
-    const andResult = valueA & valueB;
-    const orResult = valueA | valueB;
-    const leftShiftResult = valueA << BigInt(Number(valueB) % 64);
-    const rightShiftResult = valueA >> BigInt(Number(valueB) % 64);
-    const bitwiseNotResult = ~valueA;
-    const lessThanResult = valueA < valueB;
-    const lessThanOrEqualResult = valueA <= valueB;
-    const greaterThanResult = valueA > valueB;
-    const greaterThanOrEqualResult = valueA >= valueB;
-    const equalsResult = valueA === valueB;
-    const notEqualsResult = valueA !== valueB;
-
-    generateProver({
-      valueA,
-      valueB,
-      sumResult,
-      subtractResult,
-      multiplyResult,
-      divideResult,
-      xorResult,
-      andResult,
-      orResult,
-      leftShiftResult,
-      rightShiftResult,
-      bitwiseNotResult,
-      lessThanResult,
-      lessThanOrEqualResult,
-      greaterThanResult,
-      greaterThanOrEqualResult,
-      equalsResult,
-      notEqualsResult,
-    });
+    await Promise.all([
+      generateSum(),
+      generateSubtract(),
+      generateMultiply(),
+      generateDivide(),
+      generateXor(),
+      generateAnd(),
+      generateOr(),
+      generateLeftShift(),
+      generateRightShift(),
+      generateBitwiseNot(),
+      generateLessThan(),
+      generateLessThanOrEqual(),
+      generateGreaterThan(),
+      generateGreaterThanOrEqual(),
+      generateEquals(),
+      generateNotEquals(),
+    ]);
 
     try {
-      const result = await execTest();
-      console.log(result);
+      await Promise.all(
+        packages.map(async (package) => await execTest(package))
+      );
     } catch (e) {
       console.error(e);
     }
   }
 }
 
-async function execTest() {
+function generateSum() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x + y;
+  generateProver("sum", { x, y, result });
+}
+
+function generateSubtract() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x - y;
+  generateProver("subtract", { x, y, result });
+}
+
+function generateMultiply() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x * y;
+  generateProver("multiply", { x, y, result });
+}
+
+function generateDivide() {
+  const x = getRandomBigInt(MAX_64_BIT / 15n, MAX_64_BIT / 10n);
+  const y = getRandomBigInt(MAX_64_BIT / 15n, MAX_64_BIT / 10n);
+  const result = x / y;
+  generateProver("divide", { x, y, result });
+}
+
+function generateXor() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x ^ y;
+  generateProver("xor", { x, y, result });
+}
+
+function generateAnd() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x & y;
+  generateProver("and", { x, y, result });
+}
+
+function generateOr() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x | y;
+  generateProver("or", { x, y, result });
+}
+
+function generateLeftShift() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = BigInt(Math.floor(Math.random() * 64));
+  const result = x << y;
+  generateProver("left_shift", { x, y, result });
+}
+
+function generateRightShift() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = BigInt(Math.floor(Math.random() * 64));
+  const result = x >> y;
+  generateProver("right_shift", { x, y, result });
+}
+
+function generateBitwiseNot() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = ~x;
+  generateProver("bitwise_not", { x, result });
+}
+
+function generateLessThan() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x < y;
+  generateProver("less_than", { x, y, result });
+}
+
+function generateLessThanOrEqual() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x <= y;
+  generateProver("less_than_or_equal", { x, y, result });
+}
+
+function generateGreaterThan() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x > y;
+  generateProver("greater_than", { x, y, result });
+}
+
+function generateGreaterThanOrEqual() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x >= y;
+  generateProver("greater_than_or_equal", { x, y, result });
+}
+
+function generateEquals() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x == y;
+  generateProver("equals", { x, y, result });
+}
+
+function generateNotEquals() {
+  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const y = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const result = x != y;
+  generateProver("not_equals", { x, y, result });
+}
+
+function generateProver(projectName, values) {
+  const proverToml = Object.keys(values).reduce((acc, name) => {
+    return acc + `${name}="${values[name]}"\n`;
+  }, "");
+  fs.writeFileSync(
+    `${scriptsDir}/crates/${projectName}/Prover.toml`,
+    proverToml
+  );
+}
+
+function ensureDirectoryStructure() {
+  if (!fs.existsSync(scriptsDir)) {
+    fs.mkdirSync(scriptsDir);
+    fs.mkdirSync(`${scriptsDir}/src`);
+  }
+}
+
+async function execTest(package) {
   return new Promise((resolve, reject) => {
-    const command = spawn("nargo", ["execute"], { cwd: scriptsDir });
+    const command = spawn("nargo", ["execute", `--package`, package], {
+      cwd: scriptsDir,
+    });
     let output = "";
 
     command.stdout.on("data", (data) => {
@@ -84,57 +212,6 @@ async function execTest() {
       reject(`Error executing nargo test: ${error}`);
     });
   });
-}
-
-function generateProver({
-  valueA,
-  valueB,
-  sumResult,
-  subtractResult,
-  multiplyResult,
-  divideResult,
-  xorResult,
-  andResult,
-  orResult,
-  leftShiftResult,
-  rightShiftResult,
-  bitwiseNotResult,
-  lessThanResult,
-  lessThanOrEqualResult,
-  greaterThanResult,
-  greaterThanOrEqualResult,
-  equalsResult,
-  notEqualsResult,
-}) {
-  const proverToml = `
-  x = "${valueA}"
-  y = "${valueB}"
-  sumResult = "${sumResult}"
-  subtractResult = "${subtractResult}"
-  multiplyResult = "${multiplyResult}"
-  divideResult = "${divideResult}"
-  xorResult = "${xorResult}"
-  andResult = "${andResult}"
-  orResult = "${orResult}"
-  leftShiftResult = "${leftShiftResult}"
-  rightShiftResult = "${rightShiftResult}"
-  bitwiseNotResult = "${bitwiseNotResult}"
-  lessThanResult = "${lessThanResult}"
-  lessThanOrEqualResult = "${lessThanOrEqualResult}"
-  greaterThanResult = "${greaterThanResult}"
-  greaterThanOrEqualResult = "${greaterThanOrEqualResult}"
-  equalsResult = "${equalsResult}"
-  notEqualsResult = "${notEqualsResult}"
-  `;
-
-  fs.writeFileSync(`${scriptsDir}/Prover.toml`, proverToml);
-}
-
-function ensureDirectoryStructure() {
-  if (!fs.existsSync(scriptsDir)) {
-    fs.mkdirSync(scriptsDir);
-    fs.mkdirSync(`${scriptsDir}/src`);
-  }
 }
 
 function getRandomBigInt(min, max) {

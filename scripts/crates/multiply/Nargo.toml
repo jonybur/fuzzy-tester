@@ -1,0 +1,4 @@
+[package]
+name="multiply"
+type="bin"
+compiler_version="0.10.5"

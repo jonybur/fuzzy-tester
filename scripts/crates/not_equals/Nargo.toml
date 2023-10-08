@@ -1,0 +1,4 @@
+[package]
+name="not_equals"
+type="bin"
+compiler_version="0.10.5"
