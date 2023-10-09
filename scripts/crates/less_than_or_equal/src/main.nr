@@ -1,3 +1,3 @@
-fn main(x: u64, y: u64) -> pub bool {
-    x <= y
+fn main(x: u64, y: u64, result: bool) {
+    assert(x <= y == result);
 }
