@@ -153,6 +153,19 @@ function generateXYValues(args) {
   };
 }
 
+function generateShiftValues(args) {
+  return {
+    x:
+      args?.["x"] !== undefined
+        ? BigInt(args["x"])
+        : getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n),
+    y:
+      args?.["y"] !== undefined
+        ? BigInt(args["y"])
+        : BigInt(Math.floor(Math.random() * 64)),
+  };
+}
+
 function generateSum(args) {
   const values = generateXYValues(args);
   values.result = values.x + values.y;
@@ -244,24 +257,25 @@ function generateNotEquals(args) {
   return values.result;
 }
 
-function generateLeftShift() {
-  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
-  const y = BigInt(Math.floor(Math.random() * 64));
-  const result = x << y;
-  generateProver("left_shift", { x, y, result });
-  return result;
+function generateLeftShift(args) {
+  const values = generateShiftValues(args);
+  values.result = values.x << values.y;
+  generateProver("left_shift", values);
+  return values.result;
 }
 
-function generateRightShift() {
-  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
-  const y = BigInt(Math.floor(Math.random() * 64));
-  const result = x >> y;
-  generateProver("right_shift", { x, y, result });
-  return result;
+function generateRightShift(args) {
+  const values = generateShiftValues(args);
+  values.result = values.x >> values.y;
+  generateProver("right_shift", values);
+  return values.result;
 }
 
 function generateBitwiseNot() {
-  const x = getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
+  const x =
+    args?.["x"] !== undefined
+      ? BigInt(args["x"])
+      : getRandomBigInt(MAX_64_BIT / 3n, MAX_64_BIT / 2n);
   const result = ~x;
   generateProver("bitwise_not", { x, result });
   return result;
