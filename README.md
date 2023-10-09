@@ -10,7 +10,7 @@
 
 ## To add further tests
 
-- Add a project in `scripts/crates`
-- Add the project to `scripts/Nargo.toml`
-- Add a generator for your project to `src/baselines.js`
-- Add the project name and generator to the PACKAGES array in `src/constants`
+- Add a project in `scripts/crates`  
+- Add the project to `scripts/Nargo.toml`  
+- Add a generator for your project to `src/baselines.js`  
+- Add the project name and generator to the PACKAGES array in `src/constants`  
